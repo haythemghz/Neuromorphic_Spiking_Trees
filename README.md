@@ -5,6 +5,13 @@ This repository contains the source code, experimental data, and analysis script
 ## Overview
 This project introduces a deterministic, latency-aware entropy induction algorithm for spiking decision trees. The models operate under Time-to-First-Spike (TTFS) encoding and explicitly optimize for inference latency during construction.
 
+## ⚡ Hardware-Equivalent Validation (HEAV-v2)
+The project includes a scientifically rigorous validation framework that replaces speculative energy estimates with **Hardware-Equivalent Computational Footprints**. 
+
+- **SOP Counting**: We implement explicit Synaptic Operation (SOP) counting based on path traversal.
+- **Calibrated Metrics**: Complexity is evaluated using hardware-equivalent proxies ($N_{SOP}$, $N_{neuron}$) calibrated to pJ-scale costs as reported in the literature (Davies et al., 2018/2021).
+- **Run Audit**: `python code/efficiency_audit.py` generates a comparative audit against Spiking MLP baselines.
+
 ## Project Structure
 - `code/`: Core implementation and benchmark scripts.
   - `latency_aware_tree.py`: Core NST logic and temporal split operators.

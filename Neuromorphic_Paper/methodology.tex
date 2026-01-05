@@ -1,0 +1,134 @@
+\section{Methodology}
+\label{sec:methodology}
+
+This section formally defines the \textit{Neuromorphic Spiking Tree} (NST) and its ensemble extension, the \textit{Neuromorphic Spiking Forest} (NSF). We establish the mathematical framework for temporal decision-making and justify the transition from magnitude-based symbolic trees to event-driven temporal architectures.
+
+\subsection{Notation and Formalism}
+\label{subsec:notation}
+
+Throughout this paper, we adopt the notation summarized in Table~\ref{tab:notation}.
+
+\begin{table}[h]
+\centering
+\caption{Summary of Formal Notation}
+\label{tab:notation}
+\begin{tabular}{ll}
+\hline
+\textbf{Symbol} & \textbf{Definition} \\ \hline
+$\mathbf{x} \in \mathbb{R}^D$ & Input feature vector of dimension $D$. \\
+$y \in \{1, \dots, C\}$ & Class label for $C$-class classification. \\
+$\mathcal{T}$ & A Neuromorphic Spiking Tree (NST). \\
+$T_{max}$ & Total temporal simulation window (e.g., 50 steps). \\
+$t_{\mathbf{x}, i}$ & Spike time of feature $i$ under temporal encoding. \\
+$n_k$ & A specific node in the tree index $k$. \\
+$\theta_k \in [0, T_{max}]$ & Temporal split threshold (latency) of node $n_k$. \\
+$f_k \in \{1, \dots, D\}$ & Feature index assigned to node $n_k$. \\
+$\lambda$ & Regularization parameter for accuracy-latency trade-off. \\
+$\mathcal{F}$ & A Neuromorphic Spiking Forest (NSF) of $N$ trees. \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Problem Formulation}
+\label{subsec:problem_formulation}
+
+We consider the supervised classification problem where a model $\mathcal{M}$ maps an input $\mathbf{x}$ to a prediction $\hat{y}$. In the neuromorphic context, we extend this to a multi-objective optimization problem. 
+
+Let $\mathcal{A}(\mathcal{M})$ be the classification accuracy and $\mathcal{L}(\mathcal{M}, \mathbf{x})$ be the inference latency (time-to-decision) for a sample $\mathbf{x}$. The objective is to find a model $\mathcal{M}^*$ that minimizes a composite cost function:
+\begin{equation}
+J(\mathcal{M}) = (1 - \mathcal{A}(\mathcal{M})) + \lambda \cdot \mathbb{E}_{\mathbf{x} \sim P(\mathbf{x})} [\mathcal{L}(\mathcal{M}, \mathbf{x})]
+\label{eq:objective}
+\end{equation}
+where $\lambda$ governs the trade-off between predictive power and computational speed. Crucially, $\mathcal{M}$ must operate under \textit{event-driven} constraints, where information is processed only upon the arrival of discrete spikes.
+
+\subsection{Temporal Feature Encoding}
+\label{subsec:temporal_encoding}
+
+Numerical features $x_i$ are converted into the temporal domain using Time-to-First-Spike (TTFS) encoding. Given a feature $x_i \in [x_{min}, x_{max}]$, the spike time $t_{\mathbf{x}, i}$ is defined by:
+\begin{equation}
+t_{\mathbf{x}, i} = T_{max} \cdot \left( 1 - \frac{x_i - x_{min}}{x_{max} - x_{min}} \right)
+\label{eq:ttfs}
+\end{equation}
+This linear mapping ensures that higher feature magnitudes (typically more salient) result in earlier spikes. This preserves the \textit{ordinal information} of the input while bounding the processing within a temporal window $[0, T_{max}]$. Unlike rate-coding, TTFS is highly energy-efficient as it represents information with a single spike per dimension, minimizing synaptic activity.
+
+\subsection{Spiking Node as a Temporal Decision Operator}
+\label{subsec:node_operator}
+
+A spiking node $n_k$ acts as a temporal comparator. It is defined by the pair $(f_k, \theta_k)$. The node receives a spike from feature $f_k$ at time $t_{\mathbf{x}, f_k}$. 
+
+\textbf{Decision Logic:} The node fires an excitatory signal to its \textit{Right} branch if the spike arrives before its internal threshold $\theta_k$. Otherwise, it fires to its \textit{Left} branch at time $\theta_k$. Formally, the branch selection $B$ and exit latency $t_{out}$ are:
+\begin{equation}
+(B, t_{out}) = \begin{cases} 
+(\text{Right}, t_{\mathbf{x}, f_k} + \delta) & \text{if } t_{\mathbf{x}, f_k} < \theta_k \\
+(\text{Left}, \theta_k + \delta) & \text{otherwise}
+\end{cases}
+\label{eq:node_logic}
+\end{equation}
+where $\delta$ represents a minimal synaptic delay.
+
+\begin{proposition}
+A spiking decision node is functionally equivalent to a threshold test $x_i > \alpha$ in classical decision trees under temporal encoding.
+\end{proposition}
+\textit{Proof (Sketch):} Since $t_{\mathbf{x}, i}$ is a monotonically decreasing function of $x_i$, the condition $t_{\mathbf{x}, i} < \theta_k$ is equivalent to $T_{max}(1 - \hat{x}_i) < \theta_k$, which simplifies to $\hat{x}_i > 1 - \theta_k/T_{max}$. Thus, $\theta_k$ maps directly to a magnitude threshold $\alpha$.
+
+\subsection{Neuromorphic Spiking Tree (NST) Architecture}
+\label{subsec:nst_arch}
+
+An NST is a directed acyclic graph where each internal node is a temporal decision operator. 
+\begin{enumerate}
+    \item \textbf{Path Traversal:} A sample $\mathbf{x}$ traverses the tree as a "temporal race". At each level, the decision is resolved at the earliest possible moment dictated by the spike times.
+    \item \textbf{Inference Termination:} Inference terminates when a leaf node is reached. The total latency $L(\mathcal{T}, \mathbf{x})$ is the cumulative sum of $t_{out}$ across the traversed path.
+    \item \textbf{Interpretability:} Unlike deep SNNs, the decision path in an NST is clear and traceable. Each node provides a binary temporal justification for the final classification.
+\end{enumerate}
+
+\subsection{Evolutionary Construction and Optimization}
+\label{subsec:eo}
+
+We utilize a Multi-Objective Evolutionary Algorithm (MOEA) to construct NSTs. The population consists of trees (genotypes) evolved to maximize fitness:
+\begin{equation}
+Fitness(\mathcal{T}) = \text{Accuracy}(\mathcal{T}) - \lambda \cdot \text{Normalized\_Latency}(\mathcal{T})
+\label{eq:fitness}
+\end{equation}
+
+\textbf{Hybrid Initialization:} We employ a hybrid approach where $10\%$ of the initial population is seeded with converted classical CART trees. This grants a symbolic "head-start" in accuracy, while the remaining population explores the neuromorphic architectural space through growth, pruning, and synaptic threshold mutations.
+
+\subsection{Neuromorphic Spiking Forest (NSF)}
+\label{subsec:nsf}
+
+To overcome the capacity limits of a single tree, we propose the NSF—a lightweight ensemble where $N \leq 5$. Unlike classical Random Forests that rely on magnitude-based averages, an NSF must resolve conflicts in the temporal domain.
+
+We assume \textit{independence} of tree errors through feature bagging or stochastic evolution. The ensemble aims for \textit{complementarity}: where one tree might have high latency but high accuracy, another might provide a fast, "good-enough" veto.
+
+\subsection{Temporal Voting and Consensus Spike}
+\label{subsec:temporal_voting}
+
+The NSF uses a \textit{Temporal Consensus Mechanism}. Each tree $\mathcal{T}_j$ in the forest $\mathcal{F}$ produces a prediction $\hat{y}^j$ and a latency $L^j$. The forest prediction $\hat{Y}$ is governed by:
+\begin{equation}
+\hat{Y} = \text{mode}(\{\hat{y}^j \mid L^j \leq T_{consensus}\})
+\label{eq:consensus}
+\end{equation}
+The ensemble achieves an \textit{early-exit} behavior: if a majority of trees reach a leaf before a threshold $T_{consensus}$, the forest returns the result immediately, bypassing slower trees.
+
+\subsection{Error-Focused Evolution (Neuromorphic Boosting)}
+\label{subsec:boosting}
+
+NSTs are refined through error-focused evolution. During the evolutionary cycle, the population is biased towards samples misclassified by the current "Hall of Fame" (elite) individuals. This is not classical boosting (which adjusts sample weights in a fixed loss function) but rather \textit{adaptive selective pressure} that forces new generations to evolve complementary decision paths for "hard" samples.
+
+% Moved to Appendix
+
+\subsection{Computational Complexity and Latency Analysis}
+\label{subsec:complexity}
+
+\begin{lemma}
+In an NST of depth $D$, the worst-case inference latency is $O(D \cdot T_{max})$.
+\end{lemma}
+In practice, due to the TTFS encoding, the expected latency $\mathbb{E}[L]$ is significantly lower, typically $O(D \cdot \frac{T_{max}}{2})$. Compared to deep SNNs, which require multiple time-steps for every layer, NSTs offer \textit{sparse propagation}, where only the active path in the tree consumes temporal resources.
+
+\subsection{Theoretical Discussion: Bias-Variance and Stability}
+\label{subsec:bias_variance}
+
+The introduction of the latency penalty $\lambda$ into the entropy induction process (Eq. \ref{eq:objective}) has distinct implications for the model's bias-variance profile. By penalizing late-arriving features, the algorithm effectively constrains the search space of split candidates, functioning as a form of \textit{structural regularization}. This induces a "latency-bias" where the model may bypass highly discriminative but late-firing features in favor of "good-enough" early features. While this may increase the bias of individual nodes, it frequently results in shallower trees that exhibit lower variance and improved generalization on resource-constrained edge benchmarks where feature noise is prevalent.
+
+\subsection{Relation to Cost-Sensitive and Anytime Inference}
+\label{subsec:anytime}
+
+The NST paradigm shares a conceptual lineage with \textit{cost-sensitive decision trees} \cite{ling2003test}, where different "costs" (e.g., computation, measurement wait time) are assigned to features. However, unlike static cost-sensitive models, the "cost" in an NST is dynamically determined by the TTFS encoding of the input itself. Furthermore, the NST is inherently an \textit{anytime inference} model. Because the decision resolves as a temporal race, the model can be "interruptible": at any time step $t < T_{max}$, the current state of the spiking traversal provides a partial classification that becomes increasingly refined as more pulses arrive.
