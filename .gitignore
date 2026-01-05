@@ -1,9 +1,11 @@
 # Neuromorphic Spiking Trees - Clean Release .gitignore
 
+# Manuscript Exclusion (Requested: No paper in Git)
 # Legacy & Clutter
 Legacy_Archive/
-Neuromorphic_Paper/
-Neuromorphic_Tree_Project/
+# Neuromorphic_Paper/
+*.pdf
+# Neuromorphic_Tree_Project/
 Overleaf_Project/
 .venv/
 __pycache__/

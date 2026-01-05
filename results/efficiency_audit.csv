@@ -1,0 +1,3 @@
+Model,Avg_SOPs,Relative_Complexity
+Spiking MLP (Baseline),4096.0,1.0
+NST (Ours),53.33743409490334,0.01302183449582601

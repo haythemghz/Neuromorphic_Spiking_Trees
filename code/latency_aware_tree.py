@@ -161,22 +161,20 @@ class LatencyAwareNST:
         self.root = self._build_tree(X_spikes, y, depth=0)
         return self
 
-    def estimate_energy(self, X_spikes, e_spike=1.0, e_static=0.1):
+    def calculate_computational_footprint(self, X_spikes):
         """
-        Estimate energy consumption in μJ.
-        E = Σ (path_length * e_spike) + e_static
+        Calculate hardware-equivalent computational footprint.
+        Returns average SOPs and active neurons per inference.
         """
-        _, lats = self.predict_with_latency(X_spikes)
-        # In NST, spikes occur at each node decision.
-        # Energy is roughly proportional to depth for each sample.
-        # We can approximate spike count by looking at depth in predict_single if we track it.
-        # For now, use average latency as a proxy for depth/activity.
-        return np.mean(lats) * e_spike + e_static
+        _, lats, sops = self.predict_with_latency(X_spikes)
+        return np.mean(sops), self.get_depth() # Neurons roughly proportional to depth for NST
 
     def _predict_single(self, spike_times):
         node = self.root
         latency = 0
+        sop_count = 0
         while not node.is_leaf:
+            sop_count += 1
             # Latency at this node
             if node.weights is None:
                 t = spike_times[node.feature_idx]
@@ -189,7 +187,7 @@ class LatencyAwareNST:
             else:
                 latency = max(latency, node.split_time) + 1
                 node = node.left
-        return node.prediction, latency
+        return node.prediction, latency, sop_count
 
     def predict(self, X_spikes):
         return np.array([self._predict_single(s)[0] for s in X_spikes])
@@ -197,11 +195,13 @@ class LatencyAwareNST:
     def predict_with_latency(self, X_spikes):
         preds = []
         lats = []
+        sops = []
         for s in X_spikes:
-            p, l = self._predict_single(s)
+            p, l, sop = self._predict_single(s)
             preds.append(p)
             lats.append(l)
-        return np.array(preds), np.array(lats)
+            sops.append(sop)
+        return np.array(preds), np.array(lats), np.array(sops)
 
     def score(self, X_spikes, y):
         return np.mean(self.predict(X_spikes) == y)
@@ -249,16 +249,18 @@ class LatencyAwareNSF:
         res = [t.predict_with_latency(X_spikes[:, f]) for t, f in zip(self.trees, self.feature_indices)]
         all_preds = np.array([r[0] for r in res])
         all_lats = np.array([r[1] for r in res])
+        all_sops = np.array([r[2] for r in res])
         
         if not self.use_consensus:
             # Fallback to simple mean latency and majority vote
             final_preds = np.array([Counter(all_preds[:, i]).most_common(1)[0][0] for i in range(X_spikes.shape[0])])
             final_lats = np.mean(all_lats, axis=0)
-            return final_preds, final_lats
+            final_sops = np.sum(all_sops, axis=0)
+            return final_preds, final_lats, final_sops
             
-        final_preds, final_lats = [], []
+        final_preds, final_lats, final_sops = [], [], []
         for i in range(X_spikes.shape[0]):
-            votes, lats = all_preds[:, i], all_lats[:, i]
+            votes, lats, s_counts = all_preds[:, i], all_lats[:, i], all_sops[:, i]
             s_idx = np.argsort(lats)
             needed = (self.n_estimators // 2) + 1
             for k in range(needed, self.n_estimators + 1):
@@ -267,11 +269,13 @@ class LatencyAwareNSF:
                 if count >= needed:
                     final_preds.append(winner)
                     final_lats.append(lats[s_idx[k-1]])
+                    final_sops.append(np.sum(s_counts[s_idx[:k]])) # Only count sops of trees that actually ran
                     break
             else:
                 final_preds.append(Counter(votes).most_common(1)[0][0])
                 final_lats.append(np.mean(lats))
-        return np.array(final_preds), np.array(final_lats)
+                final_sops.append(np.sum(s_counts))
+        return np.array(final_preds), np.array(final_lats), np.array(final_sops)
 
 
 def encode_ttfs(X, T_max=50, noise_std=0.0):
