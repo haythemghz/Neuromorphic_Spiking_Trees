@@ -1,0 +1,29 @@
+# Neuromorphic Spiking Trees - Clean Release .gitignore
+
+# Legacy & Clutter
+Legacy_Archive/
+Neuromorphic_Paper/
+Neuromorphic_Tree_Project/
+Overleaf_Project/
+.venv/
+__pycache__/
+
+# Large Data & Archives (Requested: No data/heavy history)
+*.tar.gz
+*.zip
+*.pdf
+*.log
+*.aux
+*.bbl
+*.blg
+*.out
+*.gz
+
+# Local Assets
+code/catboost_info/
+
+# Standard Ignores
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
