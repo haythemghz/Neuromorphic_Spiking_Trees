@@ -10,9 +10,12 @@ Overleaf_Project/
 .venv/
 __pycache__/
 
-# Large Data & Archives (Requested: No data/heavy history)
+# Large Data & Archives
+src/data/
+Manuscripts/
 *.tar.gz
 *.zip
+*.h5
 *.pdf
 *.log
 *.aux
