@@ -20,9 +20,16 @@ The project includes a scientifically rigorous validation framework that replace
   - `top_q1_benchmarks.py`: Comparisons against strong temporal baselines (BranchyNet, ACT).
   - `train_spiking_cifar.py`: CIFAR-10 spiking CNN front-end trainer.
   - `evaluate_cifar_nsf.py`: High-dimensional vision task evaluation.
-  - `generate_trace.py`: Loihi 2 compatible timing trace generator.
-- `results/`: CSV files containing raw benchmark results and comparisons.
-- `figures/`: Pareto frontiers, accuracy-latency comparisons, and publication-ready plots.
+  - `generate_trace.py`: Visual decision trace generator (outputs `decision_trace.png`).
+  - `generate_loihi_trace.py`: Loihi 2 compatible Net-IO event-driven timing trace generator (outputs `loihi_netio_trace.json`).
+  - `generate_q1_pareto_plot.py`: Pareto frontier plotter comparing NSF to top-tier baselines (outputs `figures/q1_pareto_comparison.png`).
+  - `efficiency_audit.py`: SOP-counting complexity audit against Spiking MLP (outputs `results/efficiency_audit.csv`).
+  - `analyze_statistics.py`: Verification of paired Wilcoxon signed-rank significance tests (outputs `results/statistical_validation.csv`).
+  - `dataset_loader.py`: Downloader and preprocessor for the benchmark datasets.
+  - `utils.py`: General utility functions.
+  - `visualize_inference.py`: Visual path trace analysis of sample-level decision routes.
+- `results/`: CSV files containing raw benchmark results, statistical validation, and efficiency audits.
+- `figures/`: Pareto frontiers, accuracy-latency comparisons, and publication-ready plots (e.g., Figure 1 and Q1 Pareto comparison).
 
 ## Reproducing Results
 
@@ -52,6 +59,13 @@ To evaluate the model on complex vision tasks:
 python train_spiking_cifar.py
 python evaluate_cifar_nsf.py
 ```
+
+### 5. Generate Loihi 2 Net-IO Traces
+To generate neuromorphic event-driven spike timing traces compatible with Loihi 2 specs:
+```bash
+python generate_loihi_trace.py
+```
+This will produce `loihi_netio_trace.json` containing detailed per-sample routing and timing details.
 
 ## Citation
 If you use this code in your research, please cite the associated paper:
