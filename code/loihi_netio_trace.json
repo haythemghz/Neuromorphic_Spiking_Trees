@@ -1,0 +1,159 @@
+[
+    {
+        "sample_id": 0,
+        "true_label": 0,
+        "predicted_label": 0,
+        "n_nodes_traversed": 3,
+        "total_latency_steps": 8.59,
+        "trace": [
+            {
+                "time": 0,
+                "neuron_id": 0,
+                "feature": 22,
+                "threshold": 34.6939,
+                "branch": "right_early"
+            },
+            {
+                "time": 1,
+                "neuron_id": 1,
+                "feature": 22,
+                "threshold": 31.8289,
+                "branch": "right_early"
+            },
+            {
+                "time": 7.59,
+                "neuron_id": 2,
+                "feature": 27,
+                "threshold": 33.4846,
+                "branch": "right_early"
+            }
+        ]
+    },
+    {
+        "sample_id": 1,
+        "true_label": 1,
+        "predicted_label": 1,
+        "n_nodes_traversed": 5,
+        "total_latency_steps": 55.0,
+        "trace": [
+            {
+                "time": 50.0,
+                "neuron_id": 0,
+                "feature": 22,
+                "threshold": 34.6939,
+                "branch": "left_late"
+            },
+            {
+                "time": 51.0,
+                "neuron_id": 1,
+                "feature": 27,
+                "threshold": 22.0089,
+                "branch": "left_late"
+            },
+            {
+                "time": 52.0,
+                "neuron_id": 2,
+                "feature": 21,
+                "threshold": 14.388,
+                "branch": "left_late"
+            },
+            {
+                "time": 53.0,
+                "neuron_id": 3,
+                "feature": 4,
+                "threshold": 12.9579,
+                "branch": "left_late"
+            },
+            {
+                "time": 54.0,
+                "neuron_id": 4,
+                "feature": 21,
+                "threshold": 22.1259,
+                "branch": "left_late"
+            }
+        ]
+    },
+    {
+        "sample_id": 2,
+        "true_label": 0,
+        "predicted_label": 0,
+        "n_nodes_traversed": 2,
+        "total_latency_steps": 36.8201,
+        "trace": [
+            {
+                "time": 34.8201,
+                "neuron_id": 0,
+                "feature": 22,
+                "threshold": 34.6939,
+                "branch": "left_late"
+            },
+            {
+                "time": 35.8201,
+                "neuron_id": 1,
+                "feature": 27,
+                "threshold": 22.0089,
+                "branch": "right_early"
+            }
+        ]
+    },
+    {
+        "sample_id": 3,
+        "true_label": 1,
+        "predicted_label": 0,
+        "n_nodes_traversed": 3,
+        "total_latency_steps": 36.982,
+        "trace": [
+            {
+                "time": 29.4484,
+                "neuron_id": 0,
+                "feature": 22,
+                "threshold": 34.6939,
+                "branch": "right_early"
+            },
+            {
+                "time": 30.4484,
+                "neuron_id": 1,
+                "feature": 22,
+                "threshold": 31.8289,
+                "branch": "right_early"
+            },
+            {
+                "time": 35.982,
+                "neuron_id": 2,
+                "feature": 27,
+                "threshold": 33.4846,
+                "branch": "left_late"
+            }
+        ]
+    },
+    {
+        "sample_id": 4,
+        "true_label": 0,
+        "predicted_label": 0,
+        "n_nodes_traversed": 3,
+        "total_latency_steps": 8.9952,
+        "trace": [
+            {
+                "time": 5.9952,
+                "neuron_id": 0,
+                "feature": 22,
+                "threshold": 34.6939,
+                "branch": "right_early"
+            },
+            {
+                "time": 6.9952,
+                "neuron_id": 1,
+                "feature": 22,
+                "threshold": 31.8289,
+                "branch": "right_early"
+            },
+            {
+                "time": 7.9952,
+                "neuron_id": 2,
+                "feature": 27,
+                "threshold": 33.4846,
+                "branch": "right_early"
+            }
+        ]
+    }
+]

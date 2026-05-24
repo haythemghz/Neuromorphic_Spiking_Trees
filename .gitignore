@@ -9,6 +9,16 @@ Legacy_Archive/
 Overleaf_Project/
 .venv/
 __pycache__/
+Revised Version/
+Archive/
+Experimental/
+debug_*.py
+rebuild.py
+interpolate_cifar.py
+*.png
+!Repository/figures/*.png
+!figures/*.png
+!code/*.png
 
 # Large Data & Archives
 src/data/
